@@ -28,6 +28,6 @@ sync_devices:
         parser: "none"
         jpath: >-
           (interfaces[].subinterfaces[].{ip: address[].prefix | [?contains(@, "{{ obj }}" )]} || 
-          interfaces[].{ip: address[].prefix | [?contains(@, "{{ obj }}" )]}) [?ip].ip[0]
+          interfaces[].{ip: address[].prefix | [?contains(@, "{{ obj }}" )]}) [?ip].ip[0] | [0]
         post_processor: "{{ obj.split('/')[1] }}"
         iterable_type: "int"
