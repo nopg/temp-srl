@@ -19,15 +19,22 @@ sync_devices:
     commands:
       - command: "show interface all | as json"
         parser: "none"
+        # jpath: >-
+        #   (interfaces[].subinterfaces[].{name: name, state: "oper-state", ip: address[].prefix | [?contains(@, "{{ obj }}" )]} || 
+        #   interfaces[].{name: name, state: "oper-state", ip: address[].prefix | [?contains(@, "{{ obj }}" )]})
         jpath: >-
-          (interfaces[].subinterfaces[].{name: name, state: "oper-state", ip: address[].prefix | [?contains(@, "{{ obj }}" )]} || 
-          interfaces[].{name: name, state: "oper-state", ip: address[].prefix | [?contains(@, "{{ obj }}" )]})
+          (interfaces[].{name: name, match_ip: address[].prefix|[?contains(@, '{{ obj }}')]}[?match_ip].name ||
+          interfaces[].subinterfaces[].{name: name, match_ip: address[].prefix|[?contains(@, '{{ obj }}')]}[?match_ip].name)[0]
   mask_length:
     commands:
       - command: "show interface all | as json"
         parser: "none"
+        # jpath: >-
+        #   (interfaces[].subinterfaces[].{ip: address[].prefix | [?contains(@, "{{ obj }}" )]} || 
+        #   interfaces[].{ip: address[].prefix | [?contains(@, "{{ obj }}" )]})
+        # post_processor: "{{ obj[0].split('/')[1] }}"
         jpath: >-
-          (interfaces[].subinterfaces[].{ip: address[].prefix | [?contains(@, "{{ obj }}" )]} || 
-          interfaces[].{ip: address[].prefix | [?contains(@, "{{ obj }}" )]})
-        post_processor: "{{ obj[0].split('/')[1] }}"
+          (interfaces[].{name: name, match_ip: address[].prefix|[?contains(@, '{{ obj }}')]}[?match_ip].match_ip[0] ||
+          interfaces[].subinterfaces[].{name: name, match_ip: address[].prefix|[?contains(@, '{{ obj }}')]}[?match_ip].match_ip[0])[0]
+        post_processor: "{{ obj.split('/')[1] }}"
         iterable_type: "int"
