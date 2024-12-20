@@ -5,16 +5,19 @@ sync_devices:
       command: "show version | as json"
       parser: "none"
       jpath: '"basic system info".Hostname'
+      post_processor: ""
   serial:
     commands:
       - command: "show version | as json"
         parser: "none"
         jpath: '"basic system info"."Serial Number"'
+        post_processor: ""
   device_type:
     commands:
       - command: "show version | as json"
         parser: "none"
         jpath: '"basic system info"."Chassis Type"'
+        post_processor: ""
   mgmt_interface:
     commands:
       - command: "show interface all | as json"
@@ -22,6 +25,7 @@ sync_devices:
         jpath: >-
           (interfaces[].subinterfaces[].{name: name, state: "oper-state", ip: address[].prefix | [?contains(@, "{{ obj }}" )]} || 
           interfaces[].{name: name, state: "oper-state", ip: address[].prefix | [?contains(@, "{{ obj }}" )]})
+          post_processor: ""
   mask_length:
     commands:
       - command: "show interface all | as json"
@@ -29,5 +33,5 @@ sync_devices:
         jpath: >-
           (interfaces[].subinterfaces[].{ip: address[].prefix | [?contains(@, "{{ obj }}" )]} || 
           interfaces[].{ip: address[].prefix | [?contains(@, "{{ obj }}" )]})
-        post_processor: "{{ obj.split('/')[1] }}"
+        post_processor: "{{ obj[0].split('/')[1] }}"
         iterable_type: "int"
